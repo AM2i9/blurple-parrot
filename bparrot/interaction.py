@@ -1,5 +1,11 @@
 from aiohttp.web_app import Application
 
+class InteractionHandler:
+    
+    def __init__(self, name: str, type_: int, handler):
+        self.name = name
+        self.type = type_
+        self.handler = handler
 
 class ApplicationCommand:
     def __init__(self, data: dict):
