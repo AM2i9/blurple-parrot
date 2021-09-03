@@ -1,23 +1,24 @@
 import asyncio
 from aiohttp.web_app import Application
 
+
 class InteractionHandler:
-    
     def __init__(self, name: str, type_: int, handler):
         self.name = name
         self.type = type_
         self.handler = handler
         self._after_handler = None
-    
+
     async def handle(self, inter) -> dict:
         resp = await self.handler(inter)
         if self._after_handler:
             asyncio.create_task(self._after_handler(inter))
         return resp
-    
+
     def after_response(self, func):
         self._after_handler = func
         return func
+
 
 class ApplicationCommand:
     def __init__(self, data: dict):
@@ -32,6 +33,7 @@ class ApplicationCommand:
 
         self.options = data.get("options", [])
         self.default_permission = data.get("default_permission", True)
+
 
 class Interaction:
     def __init__(self, data: dict):
@@ -49,12 +51,12 @@ class Interaction:
         self.author = data.get("member")
 
         self.channel_id = data.get("channel_id")
-    
+
     def create_response(
         self,
         type_: int = 4,
         content: str = "",
-        embed = None,
+        embed=None,
         embeds: list = None,
         allowed_mentions=None,
         flags: int = None,
@@ -65,11 +67,7 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
-        
-        resp = {
-            "type": type_,
-            "data": data
-        }
+
+        resp = {"type": type_, "data": data}
 
         return resp
-        

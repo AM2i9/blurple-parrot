@@ -6,27 +6,27 @@ from bparrot.interaction import Interaction, InteractionHandler
 
 ACK_RESPONSE = {"type": 1}
 
-class Client:
 
+class Client:
     def __init__(self, public_key: str):
         self.interaction_handlers = []
         self.public_key = public_key
 
         self.app = web.Application()
-    
-    def command(self, name: str):
 
+    def command(self, name: str):
         def _deco(func):
             handler = InteractionHandler(name, 1, func)
             self.interaction_handlers.append(handler)
             return handler
+
         return _deco
-    
+
     async def process_interaction(self, inter):
         for handler in self.interaction_handlers:
             if handler.type == inter.data.type and handler.name == inter.data.name:
                 return await handler.handle(inter)
-    
+
     async def _handle_request(self, request: web.Request):
 
         body = await request.text()
@@ -39,7 +39,7 @@ class Client:
 
         if _json.get("type") == 1:
             return web.json_response(ACK_RESPONSE)
-        
+
         else:
             inter = Interaction(_json)
             resp = await self.process_interaction(inter) or {}
