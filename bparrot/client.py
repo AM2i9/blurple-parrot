@@ -1,3 +1,7 @@
+import asyncio
+from asyncio.events import AbstractEventLoop
+
+import aiohttp
 from aiohttp import web
 
 from bparrot.verify import verify_key
@@ -8,11 +12,16 @@ ACK_RESPONSE = {"type": 1}
 
 
 class Client:
-    def __init__(self, public_key: str):
+    def __init__(self, public_key: str, loop: AbstractEventLoop = None):
         self.interaction_handlers = []
         self.public_key = public_key
 
-        self.app = web.Application()
+        if not loop:
+            loop = asyncio.get_event_loop()
+        self.loop = loop
+
+        self.app = web.Application(loop=loop)
+        self.http_session = aiohttp.ClientSession(loop=loop)
 
     def command(self, name: str):
         def _deco(func):
@@ -41,7 +50,7 @@ class Client:
             return web.json_response(ACK_RESPONSE)
 
         else:
-            inter = Interaction(_json)
+            inter = Interaction(self, _json)
             resp = await self.process_interaction(inter) or {}
             return web.json_response(resp)
 
