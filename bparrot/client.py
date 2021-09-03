@@ -19,13 +19,13 @@ class Client:
         def _deco(func):
             handler = InteractionHandler(name, 1, func)
             self.interaction_handlers.append(handler)
-            return func
+            return handler
         return _deco
     
     async def process_interaction(self, inter):
         for handler in self.interaction_handlers:
             if handler.type == inter.data.type and handler.name == inter.data.name:
-                return await handler.handler(inter)
+                return await handler.handle(inter)
     
     async def _handle_request(self, request: web.Request):
 

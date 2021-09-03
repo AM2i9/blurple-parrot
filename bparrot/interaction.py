@@ -1,3 +1,4 @@
+import asyncio
 from aiohttp.web_app import Application
 
 class InteractionHandler:
@@ -6,6 +7,17 @@ class InteractionHandler:
         self.name = name
         self.type = type_
         self.handler = handler
+        self._after_handler = None
+    
+    async def handle(self, inter) -> dict:
+        resp = await self.handler(inter)
+        if self._after_handler:
+            asyncio.create_task(self._after_handler(inter))
+        return resp
+    
+    def after_response(self, func):
+        self._after_handler = func
+        return func
 
 class ApplicationCommand:
     def __init__(self, data: dict):
