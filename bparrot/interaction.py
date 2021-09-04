@@ -2,6 +2,7 @@ import asyncio
 from typing import Tuple
 
 import bparrot.http as http
+from bparrot.models import InteractionMessage
 
 
 class InteractionHandler:
@@ -111,7 +112,9 @@ class Interaction:
         if content is not None:
             data["content"] = content
 
-        await http.interaction_followup(self._client.http_session, self, data)
+        resp = await http.interaction_followup(self._client.http_session, self, data)
+        resp_message = InteractionMessage(self._client, self, resp)
+        return resp_message
 
     async def delete_initial_response(self):
         """
@@ -136,4 +139,8 @@ class Interaction:
         if content is not None:
             data["content"] = content
 
-        await http.interaction_edit_response(self._client.http_session, self, data)
+        resp = await http.interaction_edit_response(
+            self._client.http_session, self, data
+        )
+        resp_message = InteractionMessage(self._client, self, resp)
+        return resp_message
