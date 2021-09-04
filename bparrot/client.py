@@ -53,9 +53,17 @@ class Client:
             inter = Interaction(self, _json)
             resp = await self.process_interaction(inter) or {}
             return web.json_response(resp)
+    
+    async def close(self):
+        await self.http_session.close()
 
     def run(self, interactions_route: str = "/", **kwargs):
 
         self.app.router.add_post(interactions_route, self._handle_request)
 
-        web.run_app(self.app, **kwargs)
+        try:
+            web.run_app(self.app, **kwargs)
+        except Exception as e:
+            raise e
+        finally:
+            asyncio.run(self.close())

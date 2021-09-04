@@ -1,4 +1,5 @@
 import asyncio
+from typing import Tuple
 
 import bparrot.http as http
 
@@ -11,14 +12,27 @@ class InteractionHandler:
         self._after_handler = None
 
     async def handle(self, inter) -> dict:
-        resp = await self.handler(inter)
+        args = inter.get_args()
+        resp = await self.handler(inter, *args)
         if self._after_handler:
-            asyncio.create_task(self._after_handler(inter))
+            asyncio.create_task(self._after_handler(inter, *args))
         return resp
 
     def after_response(self, func):
         self._after_handler = func
         return func
+
+
+class SlashOption:
+    def __init__(self, data: dict):
+        self.name: str = data.get('name')
+        self.type: int = data.get('type')
+
+        self.value = data.get('value')
+        
+        self.options = data.get('options')
+        if self.options is not None:
+            self.options = list([SlashOption(o) for o in self.options])
 
 
 class ApplicationCommand:
@@ -32,8 +46,12 @@ class ApplicationCommand:
         self.application_id = data.get("application_id")
         self.guild_id = data.get("guild_id")
 
-        self.options = data.get("options", [])
         self.default_permission = data.get("default_permission", True)
+
+        self.options = data.get("options", [])
+
+        if self.options:
+            self.options = list([SlashOption(o) for o in self.options])
 
 
 class Interaction:
@@ -55,6 +73,9 @@ class Interaction:
         self.channel_id = data.get("channel_id")
 
         self._responded = False
+    
+    def get_args(self) -> Tuple:
+        return tuple((o.value for o in self.data.options))
 
     def create_response(
         self,
@@ -73,8 +94,7 @@ class Interaction:
     
     async def followup(
         self,
-        type_: int = 4,
-        content: str = "",
+        content: str = None,
     ):
         if not self._responded:
             raise Exception("Interaction has no initial response.")
@@ -85,4 +105,21 @@ class Interaction:
             data["content"] = content
 
         await http.interaction_followup(self._client.http_session, self, data)
+    
+    async def delete_initial_response(self):
+        if not self._responded:
+            raise Exception("Interaction has no initial response.")
+
+        await http.interaction_delete_response(self._client.http_session, self)
+    
+    async def edit_initial_response(self, content: str = None):
+        if not self._responded:
+            raise Exception("Interaction has no initial response.")
+        
+        data = {}
+
+        if content is not None:
+            data["content"] = content
+
+        await http.interaction_edit_response(self._client.http_session, self, data)
 
