@@ -25,12 +25,12 @@ class InteractionHandler:
 
 class SlashOption:
     def __init__(self, data: dict):
-        self.name: str = data.get('name')
-        self.type: int = data.get('type')
+        self.name: str = data.get("name")
+        self.type: int = data.get("type")
 
-        self.value = data.get('value')
-        
-        self.options = data.get('options')
+        self.value = data.get("value")
+
+        self.options = data.get("options")
         if self.options is not None:
             self.options = list([SlashOption(o) for o in self.options])
 
@@ -73,7 +73,7 @@ class Interaction:
         self.channel_id = data.get("channel_id")
 
         self._responded = False
-    
+
     def get_args(self) -> Tuple:
         return tuple((o.value for o in self.data.options))
 
@@ -82,6 +82,9 @@ class Interaction:
         type_: int = 4,
         content: str = "",
     ):
+        """
+        Send a response to an interaction.
+        """
         data = {}
 
         if content is not None:
@@ -91,11 +94,15 @@ class Interaction:
 
         self._responded = True
         return resp
-    
+
     async def followup(
         self,
         content: str = None,
     ):
+        """
+        Create a followup message to an interaction. Can only be used after
+        the interaction has already been responded.
+        """
         if not self._responded:
             raise Exception("Interaction has no initial response.")
 
@@ -105,21 +112,28 @@ class Interaction:
             data["content"] = content
 
         await http.interaction_followup(self._client.http_session, self, data)
-    
+
     async def delete_initial_response(self):
+        """
+        Delete the initial response to this interaction. Can only be used after
+        the interaction has already been responded.
+        """
         if not self._responded:
             raise Exception("Interaction has no initial response.")
 
         await http.interaction_delete_response(self._client.http_session, self)
-    
+
     async def edit_initial_response(self, content: str = None):
+        """
+        Edit the initial response to this interaction. Can only be used after
+        the interaction has already been responded.
+        """
         if not self._responded:
             raise Exception("Interaction has no initial response.")
-        
+
         data = {}
 
         if content is not None:
             data["content"] = content
 
         await http.interaction_edit_response(self._client.http_session, self, data)
-

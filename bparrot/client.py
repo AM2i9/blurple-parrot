@@ -53,7 +53,7 @@ class Client:
             inter = Interaction(self, _json)
             resp = await self.process_interaction(inter) or {}
             return web.json_response(resp)
-    
+
     async def close(self):
         await self.http_session.close()
 
