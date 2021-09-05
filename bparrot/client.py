@@ -1,14 +1,36 @@
+import logging
 import asyncio
 from asyncio.events import AbstractEventLoop
 
 import aiohttp
 from aiohttp import web
+from nacl.signing import VerifyKey
 
-from bparrot.verify import verify_key
 from bparrot.interaction import Interaction, InteractionHandler
 
 
 ACK_RESPONSE = {"type": 1}
+
+_log = logging.getLogger("blurple-parrot")
+
+
+def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
+    """
+    Validate the following headers of an interaction request:
+        - X-Signature-Ed25519
+        - X-Signature-Timestamp
+
+    https://discord.com/developers/docs/interactions/receiving-and-responding#security-and-authorization
+    """
+
+    key = VerifyKey(bytes.fromhex(pk))
+
+    try:
+        key.verify(f"{timestamp}{body}".encode(), bytes.fromhex(signature))
+        return True
+    except Exception as e:
+        _log.warn(e)
+    return False
 
 
 class Client:
