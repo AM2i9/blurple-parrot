@@ -268,7 +268,7 @@ class BrandingColor:
     https://discord.com/branding
     """
     blurple = 0x5865F2
-    old_blurple = 0x4E5D94
+    old_blurple = 0x7289DA
     grey = 0x979C9F
     red = 0xED4245
     green = 0x57F287
