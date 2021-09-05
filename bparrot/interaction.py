@@ -80,8 +80,9 @@ class Interaction:
 
     def create_response(
         self,
-        type_: int = 4,
         content: str = None,
+        *,
+        type_: int = 4,
         tts: bool = False,
         embed: Embed = None,
         embeds: List[Embed] = None,
@@ -134,6 +135,7 @@ class Interaction:
     async def followup(
         self,
         content: str = None,
+        *,
         tts: bool = False,
         embeds: list = None,
         allowed_mentions: list = None,
@@ -177,6 +179,7 @@ class Interaction:
     async def edit_initial_response(
         self,
         content: str = "",
+        *,
         tts: bool = False,
         embeds: list = None,
         allowed_mentions: list = None,
