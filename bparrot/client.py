@@ -101,7 +101,7 @@ class Client:
     async def close(self):
         await self.http_session.close()
 
-    async def get_app(self) -> web.Application:
+    def get_app(self) -> web.Application:
         """
         Get the web application for running using another web server.
         """
