@@ -77,15 +77,6 @@ class Interaction:
 
     def get_args(self) -> Tuple:
         return tuple((o.value for o in self.data.options))
-    
-    def ack(self):
-        """
-        Acknowledge the interaction, and show a "thinking" message. The
-        interaction must be edited later to display content.
-        """
-        return self.create_response(type_=1)
-    
-    think = ack
 
     def create_response(
         self,
@@ -140,6 +131,15 @@ class Interaction:
 
         self._responded = True
         return resp
+    
+    def ack(self):
+        """
+        Acknowledge the interaction, and show a "thinking" message. The
+        interaction must be edited later to display content.
+        """
+        return self.create_response(type_=1)
+    
+    think = ack
 
     async def followup(
         self,
