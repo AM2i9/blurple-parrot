@@ -81,7 +81,7 @@ class Interaction:
     def create_response(
         self,
         type_: int = 4,
-        content: str = "",
+        content: str = None,
         tts: bool = False,
         embed: Embed = None,
         embeds: List[Embed] = None,
@@ -94,22 +94,37 @@ class Interaction:
         """
         data = {}
 
-        if content is not None:
+        if content:
             data["content"] = content
+
+        if embeds and embed:
+            raise Exception(
+                "Can only use one of 'embed' or 'embeds' parameters at once."
+            )
+
+        if embed:
+            _emb = embed.to_dict()
+            if not _emb:
+                raise Exception("Cannot send empty embed.")
+            data["embeds"] = [_emb]
+        elif embeds:
+            data["embeds"] = []
+            for e in embeds:
+                if not isinstance(e, Embed):
+                    raise Exception(f"Cannot send non-embed objects as Embeds.")
+                _emb = e.to_dict()
+                if not _emb:
+                    raise Exception("Cannot send empty embed.")
+                data["embeds"].append(_emb)
+
+        if (type_ not in (1, 5, 6)) and not data:
+            raise Exception("Cannot send empty response.")
 
         if tts:
             data["tts"] = bool(tts)
 
         if ephemeral:
             data["flags"] = 64
-
-        if embeds and embed:
-            raise Exception("Can only use one of 'embed' or 'embeds' parameters at once.")
-        
-        if embed:
-            data["embeds"] = [embed.to_dict()]
-        elif embeds:
-            data["embeds"] = [e.to_dict() for e in embeds]
 
         resp = {"type": type_, "data": data}
 

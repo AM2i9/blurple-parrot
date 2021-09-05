@@ -67,6 +67,7 @@ class Embed:
     """
     A Discord Embed object
     """
+
     def __init__(
         self,
         *,
@@ -236,11 +237,13 @@ class Embed:
     def __dict__(self):
         return self.to_dict()
 
+
 class Color:
     """
     Common color values
     For Discord branding colors, use `BrandingColor`
     """
+
     white = 0xFFFFFF
     black = 0x000000
     blue = 0x0000FF
@@ -254,9 +257,9 @@ class Color:
 
     @staticmethod
     def from_rgb(rgb):
-        _hex = '%02x%02x%02x' % rgb
+        _hex = "%02x%02x%02x" % rgb
         return Color.from_hex(_hex)
-    
+
     @staticmethod
     def from_hex(_hex):
         return int(_hex, 16)
@@ -267,6 +270,7 @@ class BrandingColor:
     Colors, based off of Discord's branding guidelines
     https://discord.com/branding
     """
+
     blurple = 0x5865F2
     old_blurple = 0x7289DA
     grey = 0x979C9F
