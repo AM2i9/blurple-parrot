@@ -82,6 +82,11 @@ class Interaction:
         self,
         type_: int = 4,
         content: str = "",
+        tts: bool = False,
+        embeds: list = None,
+        allowed_mentions: list = None,
+        ephemeral: bool = False,
+        components: list = None,
     ):
         """
         Send a response to an interaction.
@@ -90,6 +95,12 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
+        
+        if tts:
+            data["tts"] = bool(tts)
+        
+        if ephemeral:
+            data["flags"] = 64
 
         resp = {"type": type_, "data": data}
 
@@ -99,6 +110,13 @@ class Interaction:
     async def followup(
         self,
         content: str = None,
+        tts: bool = False,
+        embeds: list = None,
+        allowed_mentions: list = None,
+        ephemeral: bool = False,
+        components: list = None,
+        username: str = None,
+        avatar_url: str = None,
     ):
         """
         Create a followup message to an interaction. Can only be used after
@@ -111,6 +129,12 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
+        
+        if tts:
+            data["tts"] = bool(tts)
+        
+        if ephemeral:
+            data["flags"] = 64
 
         resp = await http.interaction_followup(self._client.http_session, self, data)
         resp_message = InteractionMessage(self._client, self, resp)
@@ -126,7 +150,15 @@ class Interaction:
 
         await http.interaction_delete_response(self._client.http_session, self)
 
-    async def edit_initial_response(self, content: str = None):
+    async def edit_initial_response(
+        self,
+        content: str = "",
+        tts: bool = False,
+        embeds: list = None,
+        allowed_mentions: list = None,
+        ephemeral: bool = False,
+        components: list = None,
+    ):
         """
         Edit the initial response to this interaction. Can only be used after
         the interaction has already been responded.
@@ -138,6 +170,12 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
+
+        if tts:
+            data["tts"] = bool(tts)
+        
+        if ephemeral:
+            data["flags"] = 64
 
         resp = await http.interaction_edit_response(
             self._client.http_session, self, data
