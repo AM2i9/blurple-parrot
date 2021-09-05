@@ -1,8 +1,8 @@
 import asyncio
-from typing import Tuple
+from typing import List, Tuple
 
 import bparrot.http as http
-from bparrot.models import InteractionMessage
+from bparrot.models import InteractionMessage, Embed
 
 
 class InteractionHandler:
@@ -83,7 +83,8 @@ class Interaction:
         type_: int = 4,
         content: str = "",
         tts: bool = False,
-        embeds: list = None,
+        embed: Embed = None,
+        embeds: List[Embed] = None,
         allowed_mentions: list = None,
         ephemeral: bool = False,
         components: list = None,
@@ -95,12 +96,20 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
-        
+
         if tts:
             data["tts"] = bool(tts)
-        
+
         if ephemeral:
             data["flags"] = 64
+
+        if embeds and embed:
+            raise Exception("Can only use one of 'embed' or 'embeds' parameters at once.")
+        
+        if embed:
+            data["embeds"] = [embed.to_dict()]
+        elif embeds:
+            data["embeds"] = [e.to_dict() for e in embeds]
 
         resp = {"type": type_, "data": data}
 
@@ -129,10 +138,10 @@ class Interaction:
 
         if content is not None:
             data["content"] = content
-        
+
         if tts:
             data["tts"] = bool(tts)
-        
+
         if ephemeral:
             data["flags"] = 64
 
@@ -173,7 +182,7 @@ class Interaction:
 
         if tts:
             data["tts"] = bool(tts)
-        
+
         if ephemeral:
             data["flags"] = 64
 
