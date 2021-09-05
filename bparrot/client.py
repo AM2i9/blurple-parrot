@@ -34,9 +34,16 @@ def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
 
 
 class Client:
-    def __init__(self, public_key: str, loop: AbstractEventLoop = None):
+    def __init__(
+        self,
+        public_key: str,
+        interactions_path: str = "/",
+        loop: AbstractEventLoop = None,
+    ):
         self.interaction_handlers = []
         self.public_key = public_key
+
+        self.interactions_path = interactions_path
 
         if not loop:
             loop = asyncio.get_event_loop()
@@ -45,11 +52,26 @@ class Client:
         self.app = web.Application(loop=loop)
         self.http_session = aiohttp.ClientSession(loop=loop)
 
-    def command(self, name: str):
+    def add_command(self, func, type, name: str):
+        handler = InteractionHandler(name, type, func)
+        self.interaction_handlers.append(handler)
+        return handler
+
+    def slash_command(self, name: str):
         def _deco(func):
-            handler = InteractionHandler(name, 1, func)
-            self.interaction_handlers.append(handler)
-            return handler
+            return self.add_command(func, 1, name)
+
+        return _deco
+
+    def user_command(self, name: str):
+        def _deco(func):
+            return self.add_command(func, 2, name)
+
+        return _deco
+
+    def message_command(self, name: str):
+        def _deco(func):
+            return self.add_command(func, 3, name)
 
         return _deco
 
@@ -79,12 +101,25 @@ class Client:
     async def close(self):
         await self.http_session.close()
 
-    def run(self, interactions_route: str = "/", **kwargs):
+    async def get_app(self) -> web.Application:
+        """
+        Get the web application for running using another web server.
+        """
+        self.app.router.add_post(self.interactions_route, self._handle_request)
+        return self.app
 
-        self.app.router.add_post(interactions_route, self._handle_request)
+    def run(self, **kwargs):
+        """
+        Run the application locally. Simplest way to run the client, but
+        does not use all CPU cores.
+
+        https://docs.aiohttp.org/en/stable/deployment.html
+        """
+
+        app = self.get_app()
 
         try:
-            web.run_app(self.app, **kwargs)
+            web.run_app(app, **kwargs)
         except Exception as e:
             raise e
         finally:
