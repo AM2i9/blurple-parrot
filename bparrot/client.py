@@ -105,7 +105,7 @@ class Client:
         """
         Get the web application for running using another web server.
         """
-        self.app.router.add_post(self.interactions_route, self._handle_request)
+        self.app.router.add_post(self.interactions_path, self._handle_request)
         return self.app
 
     def run(self, **kwargs):
