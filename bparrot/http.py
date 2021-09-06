@@ -1,36 +1,68 @@
+import sys
+import asyncio
+from asyncio.events import AbstractEventLoop
+from typing import Optional
+
+import aiohttp
 from aiohttp import ClientSession
+
+import bparrot
 
 API_ENDPOINT = "https://discord.com/api/v9"
 
 
-def build_inter_uri(inter):
-    return f"{API_ENDPOINT}/webhooks/{inter.application_id}/{inter.token}"
+class NotAuthorized(Exception):
+    pass
 
 
-async def interaction_followup(session: ClientSession, inter, data):
-    async with session.post(build_inter_uri(inter), json=data) as r:
-        return await r.json()
+class EndpointNotFound(Exception):
+    def __init__(self, endpoint: str):
+        self.endpoint = endpoint
+
+    def __str__(self):
+        return f"Discord Endpoint {self.endpoint} not found."
 
 
-async def interaction_edit_followup(session: ClientSession, inter, id, data):
-    async with session.patch(f"{build_inter_uri(inter)}/messages/{id}", json=data) as r:
-        return await r.json()
+class Req:
+    def __init__(self, method: str, path: str, **params):
+        self.method = method
+        self.path = path
+        self.params = params
+        self.url = API_ENDPOINT + path
 
 
-async def interaction_delete_followup(session: ClientSession, inter, id):
-    async with session.delete(f"{build_inter_uri(inter)}/messages/{id}") as r:
-        if r.status != 204:
-            raise Exception(f"Failed to delete response: {await r.text()}")
+class HTTPClient:
+    def __init__(
+        self, token: Optional[str] = None, loop: Optional[AbstractEventLoop] = None
+    ):
+        self.loop = loop or asyncio.get_event_loop()
+        self._session = ClientSession(loop=self.loop)
 
+        self.token = token
 
-async def interaction_edit_response(session: ClientSession, inter, data):
-    async with session.patch(
-        f"{build_inter_uri(inter)}/messages/@original", json=data
-    ) as r:
-        return await r.json()
+        user_agent = "DiscordBot (https://github.com/AM2i9/blurple-parrot {0}) Python/{1[0]}.{1[1]} aiohttp/{2}"
+        self.user_agent: str = user_agent.format(
+            bparrot.__version__, sys.version_info, aiohttp.__version__
+        )
 
+    async def request(self, req: Req):
 
-async def interaction_delete_response(session: ClientSession, inter):
-    async with session.delete(f"{build_inter_uri(inter)}/messages/@original") as r:
-        if r.status != 204:
-            raise Exception(f"Failed to delete response: {await r.text()}")
+        headers = req.params.get("headers", {})
+        headers["Authorization"] = f"Bot {self.token}"
+        req.params["headers"] = headers
+
+        async with self._session.request(req.method, req.url, **req.params) as resp:
+
+            if resp.status == 204:
+                return None
+            elif resp.status == 404:
+                raise EndpointNotFound(req.path)
+            elif resp.status == 401:
+                raise NotAuthorized(await resp.text())
+            elif resp.status == 400:
+                raise Exception(f"Bad request: {await resp.json()}")
+
+            return await resp.json()
+
+    async def close(self):
+        await self._session.close()

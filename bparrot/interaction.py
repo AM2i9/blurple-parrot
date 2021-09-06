@@ -1,7 +1,7 @@
 import asyncio
 from typing import List, Tuple
 
-import bparrot.http as http
+from bparrot.http import Req
 from bparrot.models import InteractionMessage, Embed
 
 
@@ -171,7 +171,8 @@ class Interaction:
         if ephemeral:
             data["flags"] = 64
 
-        resp = await http.interaction_followup(self._client.http_session, self, data)
+        req = Req("POST", f"/webhooks/{self.application_id}/{self.token}", json=data)
+        resp = await self._client.http_client.request(req)
         resp_message = InteractionMessage(self._client, self, resp)
         return resp_message
 
@@ -183,7 +184,10 @@ class Interaction:
         if not self._responded:
             raise Exception("Interaction has no initial response.")
 
-        await http.interaction_delete_response(self._client.http_session, self)
+        req = Req(
+            "DELETE", f"/webhooks{self.application_id}/{self.token}/messages/@original"
+        )
+        await self._client.http_client.request(req)
 
     async def edit_initial_response(
         self,
@@ -213,8 +217,11 @@ class Interaction:
         if ephemeral:
             data["flags"] = 64
 
-        resp = await http.interaction_edit_response(
-            self._client.http_session, self, data
+        req = Req(
+            "PATCH",
+            f"/webhooks/{self.application_id}/{self.token}/messages/@original",
+            json=data,
         )
+        resp = await self._client.http_client.request(req)
         resp_message = InteractionMessage(self._client, self, resp)
         return resp_message

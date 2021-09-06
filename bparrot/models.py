@@ -1,4 +1,4 @@
-import bparrot.http as http
+from bparrot.http import Req
 
 
 class InteractionMessage:
@@ -52,15 +52,20 @@ class InteractionMessage:
         if content:
             data["content"] = content
 
-        resp = await http.interaction_edit_followup(
-            self._client.http_session, self._interaction, self.id, data
+        req = Req(
+            "PATCH",
+            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
+            json=data,
         )
+        resp = await self._client.http_client.request(req)
         return InteractionMessage(self._client, self._interaction, resp)
 
     async def delete(self):
-        await http.interaction_delete_followup(
-            self._client.http_session, self._interaction, self.id
+        req = Req(
+            "DELETE",
+            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
         )
+        await self._client.http_client.request(req)
 
 
 class Embed:

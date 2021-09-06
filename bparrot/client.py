@@ -2,10 +2,10 @@ import logging
 import asyncio
 from asyncio.events import AbstractEventLoop
 
-import aiohttp
 from aiohttp import web
 from nacl.signing import VerifyKey
 
+from bparrot.http import HTTPClient
 from bparrot.interaction import Interaction, InteractionHandler
 
 
@@ -36,12 +36,17 @@ def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
 class Client:
     def __init__(
         self,
+        application_id: str,
         public_key: str,
+        bot_token: str = "",
         interactions_path: str = "/",
         loop: AbstractEventLoop = None,
     ):
         self.interaction_handlers = []
+
+        self.application_id = application_id
         self.public_key = public_key
+        self.bot_token = bot_token
 
         self.interactions_path = interactions_path
 
@@ -50,7 +55,7 @@ class Client:
         self.loop = loop
 
         self.app = web.Application(loop=loop)
-        self.http_session = aiohttp.ClientSession(loop=loop)
+        self.http_client = HTTPClient(loop=loop, token=bot_token)
 
     def add_command(self, func, type, name: str):
         handler = InteractionHandler(name, type, func)
@@ -99,7 +104,7 @@ class Client:
             return web.json_response(resp)
 
     async def close(self):
-        await self.http_session.close()
+        await self.http_client.close()
 
     def get_app(self) -> web.Application:
         """
