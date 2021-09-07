@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Tuple
 
 from bparrot.http import Req
+from bparrot.components import ComponentInteraction
 from bparrot.models import InteractionMessage, Embed
 
 
@@ -67,6 +68,8 @@ class Interaction:
 
         if self.type == 2:
             self.data = ApplicationCommand(data.get("data"))
+        elif self.type == 3:
+            self.data = ComponentInteraction.from_dict(data.get("data"))
 
         self.guild_id: int = data.get("guild_id")
         self.author = data.get("member")
