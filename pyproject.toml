@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A Discord HTTP Interactions library"
 authors = ["Patrick Brennan (AM2i9)"]
 license = "MIT"
+repository = "https://github.com/AM2i9/blurple-parrot"
 
 [tool.poetry.dependencies]
 python = "^3.9"
