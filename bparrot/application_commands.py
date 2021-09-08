@@ -41,6 +41,8 @@ class ApplicationCommand:
         self.id = kwargs.get("id", 0)
         self.application_id = kwargs.get("application_id", None)
 
+        self.options = []
+
     def __eq__(self, other):
         return (self.id == other.id) or (
             self.type == other.type
@@ -122,7 +124,8 @@ class SlashCommand(ApplicationCommand):
     def __init__(
         self,
         name: str,
-        description: str,
+        description: str = "",
+        *,
         options: List[SlashOption] = [],
         default_permission: bool = True,
         **kwargs,
