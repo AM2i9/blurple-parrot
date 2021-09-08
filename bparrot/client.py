@@ -125,7 +125,7 @@ class Client:
 
     def button_click(self, custom_id: str):
         def _deco(func):
-            _intr = button(custom_id)
+            _intr = button_click(custom_id)
             _listener = self.add_listener(_intr, func)
             return _listener
 
