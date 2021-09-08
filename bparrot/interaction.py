@@ -1,5 +1,5 @@
 import asyncio
-from bparrot.application_commands import SlashCommand
+from bparrot.application_commands import get_application_command, SlashCommand
 from typing import List, Tuple
 
 from bparrot.http import Req
@@ -11,14 +11,15 @@ class InteractionListener:
     def __init__(self, interaction, handler):
         self.inter = interaction
         self.handler = handler
-    
-    def __eq__(self, other):
-        return self.inter == other
+
+        self._after_response = None
     
     async def handle(self, inter) -> dict:
 
         if isinstance(inter, SlashCommand):
             args = inter.get_args()
+        else:
+            args = {}
         resp = await self.handler(inter, **args)
         if self._after_response:
             asyncio.create_task(self._after_response(inter, **args))
@@ -27,38 +28,7 @@ class InteractionListener:
     def after_response(self, func):
         self._after_response = func
         return func
-
-
-class SlashOption:
-    def __init__(self, data: dict):
-        self.name: str = data.get("name")
-        self.type: int = data.get("type")
-
-        self.value = data.get("value")
-
-        self.options = data.get("options")
-        if self.options is not None:
-            self.options = list([SlashOption(o) for o in self.options])
-
-
-class ApplicationCommand:
-    def __init__(self, data: dict):
-
-        self.id = data.get("id")
-        self.type = data.get("type", 1)
-        self.name = data.get("name")
-        self.description = data.get("description")
-
-        self.application_id = data.get("application_id")
-        self.guild_id = data.get("guild_id")
-
-        self.default_permission = data.get("default_permission", True)
-
-        self.options = data.get("options", [])
-
-        if self.options:
-            self.options = list([SlashOption(o) for o in self.options])
-
+        
 
 class Interaction:
     def __init__(self, client, data: dict):
@@ -71,7 +41,7 @@ class Interaction:
         self.version: int = data.get("version")
 
         if self.type == 2:
-            self.data = ApplicationCommand(data.get("data"))
+            self.data = get_application_command(data.get("data"))
         elif self.type == 3:
             self.data = ComponentInteraction.from_dict(data.get("data"))
 
