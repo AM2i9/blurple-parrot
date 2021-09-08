@@ -3,7 +3,7 @@ from bparrot.application_commands import get_application_command, SlashCommand
 from typing import List, Tuple
 
 from bparrot.http import Req
-from bparrot.components import ActionRow, ComponentInteraction
+from bparrot.components import ComponentInteraction, ComponentType
 from bparrot.models import InteractionMessage, Embed
 
 
@@ -16,8 +16,13 @@ class InteractionListener:
 
     async def handle(self, inter) -> dict:
 
-        if isinstance(inter, SlashCommand):
+        if isinstance(inter.data, SlashCommand):
             args = inter.get_args()
+        elif (
+            isinstance(inter.data, ComponentInteraction)
+            and inter.data.component_type == ComponentType.SELECT_MENU
+        ):
+            args = {"values": inter.data.values}
         else:
             args = {}
         resp = await self.handler(inter, **args)
@@ -53,7 +58,7 @@ class Interaction:
         self._responded = False
 
     def get_args(self) -> Tuple:
-        return tuple((o.value for o in self.data.options))
+        return {o.name: o.value for o in self.data.options}
 
     def create_response(
         self,
@@ -89,7 +94,7 @@ class Interaction:
             data["embeds"] = []
             for e in embeds:
                 if not isinstance(e, Embed):
-                    raise Exception(f"Cannot send non-embed objects as Embeds.")
+                    raise Exception("Cannot send non-embed objects as Embeds.")
                 _emb = e.to_dict()
                 if not _emb:
                     raise Exception("Cannot send empty embed.")
