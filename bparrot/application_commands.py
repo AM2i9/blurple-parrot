@@ -45,7 +45,6 @@ class ApplicationCommand:
         return (self.id == other.id) or (
             self.type == other.type
             and self.name == other.name
-            and self.description == other.description
             and self.options == other.options
         )
 
