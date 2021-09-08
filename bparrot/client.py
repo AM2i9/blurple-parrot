@@ -117,8 +117,9 @@ class Client:
 
     async def process_interaction(self, inter):
         for listener in self.interaction_listeners:
-            if listener.inter == inter.data:
-                return await listener.handle(inter)
+            if type(listener.inter) is type(inter.data):
+                if listener.inter == inter.data:
+                    return await listener.handle(inter)
 
     async def _handle_request(self, request: web.Request):
 
