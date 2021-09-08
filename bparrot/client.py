@@ -1,3 +1,4 @@
+from typing import Callable, List
 import logging
 import asyncio
 from asyncio.events import AbstractEventLoop
@@ -6,7 +7,13 @@ from aiohttp import web
 from nacl.signing import VerifyKey
 
 from bparrot.http import HTTPClient
-from bparrot.interaction import Interaction, InteractionHandler
+from bparrot.interaction import Interaction, InteractionListener
+from bparrot.application_commands import (
+    MessageCommand,
+    SlashCommand,
+    SlashOption,
+    UserCommand,
+)
 
 
 ACK_RESPONSE = {"type": 1}
@@ -33,6 +40,28 @@ def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
     return False
 
 
+def slash_command(
+    name: str,
+    description: str,
+    options: List[SlashOption] = [],
+    default_permission: bool = True,
+):
+    return SlashCommand(
+        name=name,
+        description=description,
+        options=options,
+        default_permission=default_permission,
+    )
+
+
+def user_command(name: str):
+    return UserCommand(name)
+
+
+def message_command(name: str):
+    return MessageCommand(name)
+
+
 class Client:
     def __init__(
         self,
@@ -42,7 +71,7 @@ class Client:
         interactions_path: str = "/",
         loop: AbstractEventLoop = None,
     ):
-        self.interaction_handlers = []
+        self.interaction_listeners = []
 
         self.application_id = application_id
         self.public_key = public_key
@@ -57,33 +86,39 @@ class Client:
         self.app = web.Application(loop=loop)
         self.http_client = HTTPClient(loop=loop, token=bot_token)
 
-    def add_command(self, func, type, name: str):
-        handler = InteractionHandler(name, type, func)
-        self.interaction_handlers.append(handler)
-        return handler
+    def add_listener(self, inter, func):
+        _listener = InteractionListener(inter, func)
+        self.interaction_listeners.append(_listener)
+        return _listener
 
-    def slash_command(self, name: str):
+    def slash_command(self, **kwargs):
         def _deco(func):
-            return self.add_command(func, 1, name)
+            _intr = slash_command(**kwargs)
+            _listener = self.add_listener(_intr, func)
+            return _listener
 
         return _deco
 
     def user_command(self, name: str):
         def _deco(func):
-            return self.add_command(func, 2, name)
+            _intr = user_command(name)
+            _listener = self.add_listener(_intr, func)
+            return _listener
 
         return _deco
 
     def message_command(self, name: str):
         def _deco(func):
-            return self.add_command(func, 3, name)
+            _intr = message_command(name)
+            _listener = self.add_listener(_intr, func)
+            return _listener
 
         return _deco
 
     async def process_interaction(self, inter):
-        for handler in self.interaction_handlers:
-            if handler.type == inter.data.type and handler.name == inter.data.name:
-                return await handler.handle(inter)
+        for listener in self.interaction_listeners:
+            if listener.inter == inter.data:
+                return await listener.handle(inter)
 
     async def _handle_request(self, request: web.Request):
 

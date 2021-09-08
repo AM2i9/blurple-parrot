@@ -13,7 +13,7 @@ class InteractionListener:
         self.handler = handler
 
         self._after_response = None
-    
+
     async def handle(self, inter) -> dict:
 
         if isinstance(inter, SlashCommand):
@@ -24,11 +24,11 @@ class InteractionListener:
         if self._after_response:
             asyncio.create_task(self._after_response(inter, **args))
         return resp
-    
+
     def after_response(self, func):
         self._after_response = func
         return func
-        
+
 
 class Interaction:
     def __init__(self, client, data: dict):
