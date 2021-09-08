@@ -63,7 +63,7 @@ def message_command(name: str):
     return MessageCommand(name)
 
 
-def button_click(custom_id: str):
+def button(custom_id: str):
     return ComponentInteraction(
         custom_id=custom_id,
         component_type=ComponentType.BUTTON
@@ -123,9 +123,9 @@ class Client:
 
         return _deco
 
-    def button_click(self, custom_id: str):
+    def button(self, custom_id: str):
         def _deco(func):
-            _intr = button_click(custom_id)
+            _intr = button(custom_id)
             _listener = self.add_listener(_intr, func)
             return _listener
 
