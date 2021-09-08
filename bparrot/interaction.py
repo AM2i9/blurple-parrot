@@ -1,4 +1,5 @@
 import asyncio
+from bparrot.application_commands import SlashCommand
 from typing import List, Tuple
 
 from bparrot.http import Req
@@ -6,22 +7,25 @@ from bparrot.components import ComponentInteraction
 from bparrot.models import InteractionMessage, Embed
 
 
-class InteractionHandler:
-    def __init__(self, name: str, type_: int, handler):
-        self.name = name
-        self.type = type_
+class InteractionListener:
+    def __init__(self, interaction, handler):
+        self.inter = interaction
         self.handler = handler
-        self._after_handler = None
-
+    
+    def __eq__(self, other):
+        return self.inter == other
+    
     async def handle(self, inter) -> dict:
-        args = inter.get_args()
-        resp = await self.handler(inter, *args)
-        if self._after_handler:
-            asyncio.create_task(self._after_handler(inter, *args))
-        return resp
 
+        if isinstance(inter, SlashCommand):
+            args = inter.get_args()
+        resp = await self.handler(inter, **args)
+        if self._after_response:
+            asyncio.create_task(self._after_response(inter, **args))
+        return resp
+    
     def after_response(self, func):
-        self._after_handler = func
+        self._after_response = func
         return func
 
 
