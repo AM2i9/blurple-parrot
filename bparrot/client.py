@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import List
 import logging
 import asyncio
 from asyncio.events import AbstractEventLoop
@@ -8,6 +8,7 @@ from nacl.signing import VerifyKey
 
 from bparrot.http import HTTPClient
 from bparrot.interaction import Interaction, InteractionListener
+from bparrot.components import ComponentInteraction, ComponentType
 from bparrot.application_commands import (
     MessageCommand,
     SlashCommand,
@@ -60,6 +61,13 @@ def user_command(name: str):
 
 def message_command(name: str):
     return MessageCommand(name)
+
+
+def button_click(custom_id: str):
+    return ComponentInteraction(
+        custom_id=custom_id,
+        component_type=ComponentType.BUTTON
+    )
 
 
 class Client:
@@ -115,6 +123,14 @@ class Client:
 
         return _deco
 
+    def button_click(self, custom_id: str):
+        def _deco(func):
+            _intr = button(custom_id)
+            _listener = self.add_listener(_intr, func)
+            return _listener
+
+        return _deco
+        
     async def process_interaction(self, inter):
         for listener in self.interaction_listeners:
             if type(listener.inter) is type(inter.data):

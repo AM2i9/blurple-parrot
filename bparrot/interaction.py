@@ -3,7 +3,7 @@ from bparrot.application_commands import get_application_command, SlashCommand
 from typing import List, Tuple
 
 from bparrot.http import Req
-from bparrot.components import ComponentInteraction
+from bparrot.components import ActionRow, ComponentInteraction
 from bparrot.models import InteractionMessage, Embed
 
 
@@ -103,6 +103,9 @@ class Interaction:
 
         if ephemeral:
             data["flags"] = 64
+
+        if components:
+            data["components"] = [c.to_dict() for c in components]
 
         resp = {"type": type_, "data": data}
 
