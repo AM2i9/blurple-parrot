@@ -220,7 +220,7 @@ class ComponentInteraction:
         self.custom_id = custom_id
         self.component_type = component_type
         self.values = values
-    
+
     def __eq__(self, other):
         return (
             self.custom_id == other.custom_id

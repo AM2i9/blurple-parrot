@@ -65,8 +65,13 @@ def message_command(name: str):
 
 def button(custom_id: str):
     return ComponentInteraction(
-        custom_id=custom_id,
-        component_type=ComponentType.BUTTON
+        custom_id=custom_id, component_type=ComponentType.BUTTON
+    )
+
+
+def select(custom_id: str):
+    return ComponentInteraction(
+        custom_id=custom_id, component_type=ComponentType.SELECT_MENU
     )
 
 
@@ -130,7 +135,15 @@ class Client:
             return _listener
 
         return _deco
-        
+
+    def select(self, custom_id: str):
+        def _deco(func):
+            _intr = select(custom_id)
+            _listener = self.add_listener(_intr, func)
+            return _listener
+
+        return _deco
+
     async def process_interaction(self, inter):
         for listener in self.interaction_listeners:
             if type(listener.inter) is type(inter.data):
