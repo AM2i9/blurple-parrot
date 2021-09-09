@@ -47,7 +47,7 @@ class ApplicationCommand:
         return (self.id == other.id) or (
             self.type == other.type
             and self.name == other.name
-            and self.options == other.options
+            and all([option in self.options for option in other.options])
         )
 
     @classmethod
@@ -72,11 +72,12 @@ class SlashOption:
     def __init__(
         self,
         name: str,
-        description: str,
+        description: str = "",
         type: SlashOptionType = SlashOptionType.STRING,
         required: bool = False,
         choices: List[SlashChoice] = [],
         options: List["SlashOption"] = [],
+        value=None,
     ):
 
         if re.match("^[\w-]{1,32}$", name) is None and name.islower():
@@ -88,6 +89,12 @@ class SlashOption:
         self.required = bool(required)
         self.choices = choices
         self.options = options
+
+        if value is not None:
+            self.value = value
+    
+    def __eq__(self, other):
+        return self.type == other.type and self.name == other.name
 
     @classmethod
     def from_dict(cls, data):
