@@ -51,6 +51,7 @@ class Client:
         Create a SlashCommand Listener. Used as a decorator. Takes the same
         parameters as a SlashCommand object.
         """
+
         def _deco(func):
             _cmd = slash_command(
                 name=name,
@@ -60,6 +61,7 @@ class Client:
             )(func)
             self.add_listener(_cmd)
             return _cmd
+
         return _deco
 
     def user_command(self, name: str):
@@ -67,10 +69,12 @@ class Client:
         Create a UserCommand Listener. Used as a decorator. Takes only the `name`
         parameter.
         """
+
         def _deco(func):
             _cmd = user_command(name)(func)
             self.add_listener(_cmd)
             return _cmd
+
         return _deco
 
     def message_command(self, name: str):
@@ -83,6 +87,7 @@ class Client:
             _cmd = message_command(name)(func)
             self.add_listener(_cmd)
             return _cmd
+
         return _deco
 
     def button(self, custom_id: str):
@@ -92,9 +97,10 @@ class Client:
         """
 
         def _deco(func):
-            _cmp= button(custom_id)(func)
+            _cmp = button(custom_id)(func)
             self.add_listener(_cmp)
             return _cmp
+
         return _deco
 
     def select(self, custom_id: str):
@@ -104,9 +110,10 @@ class Client:
         """
 
         def _deco(func):
-            _cmp= select(custom_id)(func)
+            _cmp = select(custom_id)(func)
             self.add_listener(_cmp)
             return _cmp
+
         return _deco
 
     async def on_interaction(self, inter):
@@ -126,7 +133,7 @@ class Client:
         _json = await request.json()
 
         if _json.get("type") == 1:
-            return web.json_response(ACK_RESPONSE)
+            return web.json_response({"type": 1})
 
         else:
             inter = Interaction(self, _json)

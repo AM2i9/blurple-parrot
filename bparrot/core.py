@@ -12,9 +12,9 @@ from bparrot.application_commands import (
     UserCommand,
 )
 
-ACK_RESPONSE = {"type": 1}
 
 _log = logging.getLogger("blurple-parrot")
+
 
 def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
     """
