@@ -47,32 +47,82 @@ def slash_command(
     options: List[SlashOption] = [],
     default_permission: bool = True,
 ):
-    return SlashCommand(
-        name=name,
-        description=description,
-        options=options,
-        default_permission=default_permission,
-    )
+    """
+    Create a SlashCommand Listener. Used as a decorator. Takes the same
+    parameters as a SlashCommand object. Must be manually added to the Client.
+    """
+
+    def _deco(func):
+        _cmd = SlashCommand(
+            name=name,
+            description=description,
+            options=options,
+            default_permission=default_permission,
+        )
+        _listener = InteractionListener(_cmd, func)
+        return _listener
+
+    return _deco
 
 
 def user_command(name: str):
-    return UserCommand(name)
+    """
+    Create a UserCommand Listener. Used as a decorator. Takes only the `name`
+    parameter. Must be manually added to the Client.
+    """
+
+    def _deco(func):
+        _cmd = UserCommand(name)
+        _listener = InteractionListener(_cmd, func)
+        return _listener
+
+    return _deco
 
 
 def message_command(name: str):
-    return MessageCommand(name)
+    """
+    Create a MessageCommand Listener. Used as a decorator. Takes only the `name`
+    parameter. Must be manually added to the Client.
+    """
+
+    def _deco(func):
+        _cmd = MessageCommand(name)
+        _listener = InteractionListener(_cmd, func)
+        return _listener
+
+    return _deco
 
 
 def button(custom_id: str):
-    return ComponentInteraction(
-        custom_id=custom_id, component_type=ComponentType.BUTTON
-    )
+    """
+    Create a ComponentIteraction Listener that is listening for a Button of a
+    certain `custom_id`. Must be manually added to the Client.
+    """
+
+    def _deco(func):
+        _cmp = ComponentInteraction(
+            custom_id=custom_id, component_type=ComponentType.BUTTON
+        )
+        _listener = InteractionListener(_cmp, func)
+        return _listener
+
+    return _deco
 
 
 def select(custom_id: str):
-    return ComponentInteraction(
-        custom_id=custom_id, component_type=ComponentType.SELECT_MENU
-    )
+    """
+    Create a ComponentIteraction Listener that is listening for a SelectMenu of
+    a certain `custom_id`. Must be manually added to the Client.
+    """
+
+    def _deco(func):
+        _cmp = ComponentInteraction(
+            custom_id=custom_id, component_type=ComponentType.SELECT_MENU
+        )
+        _listener = InteractionListener(_cmp, func)
+        return _listener
+
+    return _deco
 
 
 class Client:
@@ -99,52 +149,79 @@ class Client:
         self.app = web.Application(loop=loop)
         self.http_client = HTTPClient(loop=loop, token=bot_token)
 
-    def add_listener(self, inter, func):
-        _listener = InteractionListener(inter, func)
-        self.interaction_listeners.append(_listener)
-        return _listener
+    def add_listener(self, listener):
+        self.interaction_listeners.append(listener)
 
-    def slash_command(self, **kwargs):
+    def slash_command(
+        self,
+        name: str,
+        description: str,
+        options: List[SlashOption] = [],
+        default_permission: bool = True,
+    ):
+        """
+        Create a SlashCommand Listener. Used as a decorator. Takes the same
+        parameters as a SlashCommand object.
+        """
         def _deco(func):
-            _intr = slash_command(**kwargs)
-            _listener = self.add_listener(_intr, func)
-            return _listener
-
+            _cmd = slash_command(
+                name=name,
+                description=description,
+                options=options,
+                default_permission=default_permission,
+            )(func)
+            self.add_listener(_cmd)
+            return _cmd
         return _deco
 
     def user_command(self, name: str):
+        """
+        Create a UserCommand Listener. Used as a decorator. Takes only the `name`
+        parameter.
+        """
         def _deco(func):
-            _intr = user_command(name)
-            _listener = self.add_listener(_intr, func)
-            return _listener
-
+            _cmd = user_command(name)(func)
+            self.add_listener(_cmd)
+            return _cmd
         return _deco
 
     def message_command(self, name: str):
-        def _deco(func):
-            _intr = message_command(name)
-            _listener = self.add_listener(_intr, func)
-            return _listener
+        """
+        Create a MessageCommand Listener. Used as a decorator. Takes only the `name`
+        parameter.
+        """
 
+        def _deco(func):
+            _cmd = message_command(name)(func)
+            self.add_listener(_cmd)
+            return _cmd
         return _deco
 
     def button(self, custom_id: str):
-        def _deco(func):
-            _intr = button(custom_id)
-            _listener = self.add_listener(_intr, func)
-            return _listener
+        """
+        Create a ComponentIteraction Listener that is listening for a button of a
+        certain `custom_id`.
+        """
 
+        def _deco(func):
+            _cmp= button(custom_id)(func)
+            self.add_listener(_cmp)
+            return _cmp
         return _deco
 
     def select(self, custom_id: str):
-        def _deco(func):
-            _intr = select(custom_id)
-            _listener = self.add_listener(_intr, func)
-            return _listener
+        """
+        Create a ComponentIteraction Listener that is listening for a SelectMenu of
+        a certain `custom_id`.
+        """
 
+        def _deco(func):
+            _cmp= select(custom_id)(func)
+            self.add_listener(_cmp)
+            return _cmp
         return _deco
 
-    async def process_interaction(self, inter):
+    async def on_interaction(self, inter):
         for listener in self.interaction_listeners:
             if type(listener.inter) is type(inter.data):
                 if listener.inter == inter.data:
@@ -165,7 +242,7 @@ class Client:
 
         else:
             inter = Interaction(self, _json)
-            resp = await self.process_interaction(inter) or {}
+            resp = await self.on_interaction(inter) or {}
             return web.json_response(resp)
 
     async def close(self):

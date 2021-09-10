@@ -92,7 +92,7 @@ class SlashOption:
 
         if value is not None:
             self.value = value
-    
+
     def __eq__(self, other):
         return self.type == other.type and self.name == other.name
 
