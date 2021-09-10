@@ -1,3 +1,4 @@
+from bparrot.models import Member, User
 import re
 
 from typing import List
@@ -174,6 +175,15 @@ class UserCommand(ApplicationCommand):
     def __init__(self, name: str, **kwargs):
         super().__init__(ApplicationCommandType.USER, **kwargs)
         self.name = name
+
+        resolved = kwargs.get("resolved")
+        if resolved:
+            raw_member = list(resolved.get("members").values())[0]
+            raw_user = list(resolved.get("users").values())[0]
+
+            self.user = User.from_dict(raw_user)
+            raw_member["user"] = self.user
+            self.member = Member.from_dict(raw_member)
 
     def to_dict(self):
         return {"type": self.type, "name": self.name}

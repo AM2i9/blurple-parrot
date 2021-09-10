@@ -1,5 +1,9 @@
 import asyncio
-from bparrot.application_commands import get_application_command, SlashCommand
+from bparrot.application_commands import (
+    UserCommand,
+    get_application_command,
+    SlashCommand,
+)
 from typing import List, Tuple
 
 from bparrot.http import Req
@@ -16,16 +20,20 @@ class InteractionListener:
 
     async def handle(self, inter) -> dict:
 
+        args = []
+        kwargs = {}
+
         if isinstance(inter.data, SlashCommand):
-            args = inter.get_args()
+            kwargs = inter.get_args()
+        elif isinstance(inter.data, UserCommand):
+            args = [inter.data.member]
         elif (
             isinstance(inter.data, ComponentInteraction)
             and inter.data.component_type == ComponentType.SELECT_MENU
         ):
-            args = {"values": inter.data.values}
-        else:
-            args = {}
-        resp = await self.handler(inter, **args)
+            args = [inter.data.values]
+
+        resp = await self.handler(inter, *args, **kwargs)
         if self._after_response:
             asyncio.create_task(self._after_response(inter, **args))
         return resp

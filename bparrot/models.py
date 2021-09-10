@@ -1,4 +1,14 @@
+from bparrot.components import ButtonStyle
+from dataclasses import dataclass
+from typing import List
+
 from bparrot.http import Req
+
+
+class DictLoader:
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(**data)
 
 
 class InteractionMessage:
@@ -285,3 +295,53 @@ class BrandingColor:
     fuchsia = 0xEB459E
     white = 0xFFFFFF
     black = 0x000000
+
+
+@dataclass
+class User(DictLoader):
+    """
+    Represents a resolved Discord User
+    """
+
+    id: int
+    username: str
+    discriminator: str
+    avatar: str = None
+    bot: bool = False
+    system: bool = False
+    mfa_enabled: bool = False
+    banner: str = None
+    accent_color: int = None
+    locale: str = None
+    verified: bool = False
+    email: str = None
+    flags: int = None
+    premium_type: int = None
+    public_flags: int = None
+
+
+@dataclass
+class Member(DictLoader):
+    """
+    Represents a resolved Discord Member
+    """
+
+    roles: List[int]
+    joined_at: str
+
+    user: User
+    nick: str = None
+    avatar: str = None
+    premium_since: str = None
+    is_pending: bool = None
+    pending: bool = None
+    permissions: int = None
+    
+    def __post_init__(self):
+
+        self.id = self.user.id
+        self.name = self.user.username
+        self.discriminator = self.user.discriminator
+        self.bot = self.user.bot
+
+        self.mention: str = f"<@{self.user.id}>"
