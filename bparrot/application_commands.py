@@ -37,9 +37,10 @@ class ApplicationCommand:
 
     name: str
 
-    def __init__(self, type: ApplicationCommandType, **kwargs):
+    def __init__(self, type: ApplicationCommandType, guild_id: int = None, **kwargs):
         self.type = type
         self.id = kwargs.get("id", 0)
+        self.guild_id = guild_id
         self.application_id = kwargs.get("application_id", None)
 
         self.options = []

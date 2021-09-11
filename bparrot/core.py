@@ -40,6 +40,7 @@ def slash_command(
     description: str,
     options: List[SlashOption] = [],
     default_permission: bool = True,
+    guild_id: int = None,
 ):
     """
     Create a SlashCommand Listener. Used as a decorator. Takes the same
@@ -52,6 +53,7 @@ def slash_command(
             description=description,
             options=options,
             default_permission=default_permission,
+            guild_id=guild_id,
         )
         _listener = InteractionListener(_cmd, func)
         return _listener
@@ -59,28 +61,28 @@ def slash_command(
     return _deco
 
 
-def user_command(name: str):
+def user_command(name: str, guild_id: int = None):
     """
     Create a UserCommand Listener. Used as a decorator. Takes only the `name`
     parameter. Must be manually added to the Client.
     """
 
     def _deco(func):
-        _cmd = UserCommand(name)
+        _cmd = UserCommand(name, guild_id=guild_id)
         _listener = InteractionListener(_cmd, func)
         return _listener
 
     return _deco
 
 
-def message_command(name: str):
+def message_command(name: str, guild_id: int = None):
     """
     Create a MessageCommand Listener. Used as a decorator. Takes only the `name`
     parameter. Must be manually added to the Client.
     """
 
     def _deco(func):
-        _cmd = MessageCommand(name)
+        _cmd = MessageCommand(name, guild_id=guild_id)
         _listener = InteractionListener(_cmd, func)
         return _listener
 

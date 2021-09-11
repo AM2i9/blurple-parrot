@@ -29,9 +29,6 @@ class Client:
             raise Exception("A bot token or public key is required")
 
         self.http_client = HTTPClient(loop=loop, token=bot_token)
-
-        if not public_key:
-            public_key = self.http_client.get_public_key()
         
         self._public_key = public_key
 
@@ -46,6 +43,7 @@ class Client:
         description: str,
         options: List[SlashOption] = [],
         default_permission: bool = True,
+        guild_id: int = None,
     ):
         """
         Create a SlashCommand Listener. Used as a decorator. Takes the same
@@ -58,33 +56,34 @@ class Client:
                 description=description,
                 options=options,
                 default_permission=default_permission,
+                guild_id=guild_id,
             )(func)
             self.add_listener(_cmd)
             return _cmd
 
         return _deco
 
-    def user_command(self, name: str):
+    def user_command(self, name: str, guild_id: int = None):
         """
         Create a UserCommand Listener. Used as a decorator. Takes only the `name`
         parameter.
         """
 
         def _deco(func):
-            _cmd = user_command(name)(func)
+            _cmd = user_command(name, guild_id=guild_id)(func)
             self.add_listener(_cmd)
             return _cmd
 
         return _deco
 
-    def message_command(self, name: str):
+    def message_command(self, name: str, guild_id: int = None):
         """
         Create a MessageCommand Listener. Used as a decorator. Takes only the `name`
         parameter.
         """
 
         def _deco(func):
-            _cmd = message_command(name)(func)
+            _cmd = message_command(name, guild_id=guild_id)(func)
             self.add_listener(_cmd)
             return _cmd
 

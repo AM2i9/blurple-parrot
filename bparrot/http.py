@@ -53,9 +53,6 @@ class HTTPClient:
         self.token = token
         if not self.token:
             _log.warn("Token required for non-interaction response API calls.")
-        else:
-            self._application = loop.run_until_complete(self.login())
-            self.application_id = self._application["id"]
 
 
     async def request(self, req: Req):
@@ -88,6 +85,8 @@ class HTTPClient:
         except NotAuthorized as e:
             raise LoginFailure("Invalid Token") from e
         
+        self._application = _data
+        self.application_id = _data["id"]
         return _data
     
     async def get_global_application_commands(self) -> List[dict]:
