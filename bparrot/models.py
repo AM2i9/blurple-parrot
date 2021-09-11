@@ -1,4 +1,3 @@
-from bparrot.components import ButtonStyle
 from dataclasses import dataclass
 from typing import List
 
@@ -336,7 +335,7 @@ class Member(DictLoader):
     is_pending: bool = None
     pending: bool = None
     permissions: int = None
-    
+
     def __post_init__(self):
 
         self.id = self.user.id

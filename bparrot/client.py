@@ -29,7 +29,7 @@ class Client:
             raise Exception("A bot token or public key is required")
 
         self.http_client = HTTPClient(loop=loop, token=bot_token)
-        
+
         self._public_key = public_key
 
         self.app = web.Application(loop=loop)
@@ -171,7 +171,7 @@ class Client:
             raise e
         finally:
             asyncio.run(self.close())
-    
+
     def run_factory(self):
         """
         Return a web.Application for running using another web server.

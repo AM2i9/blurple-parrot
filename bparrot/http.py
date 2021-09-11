@@ -13,6 +13,7 @@ API_ENDPOINT = "https://discord.com/api/v9"
 
 _log = logging.getLogger(__name__)
 
+
 class NotAuthorized(Exception):
     pass
 
@@ -27,7 +28,6 @@ class EndpointNotFound(Exception):
 
     def __str__(self):
         return f"Discord Endpoint {self.endpoint} not found."
-
 
 
 class Req:
@@ -54,7 +54,6 @@ class HTTPClient:
         if not self.token:
             _log.warn("Token required for non-interaction response API calls.")
 
-
     async def request(self, req: Req):
 
         headers = req.params.get("headers", {})
@@ -77,29 +76,29 @@ class HTTPClient:
 
     async def close(self):
         await self._session.close()
-    
+
     async def login(self):
-        
+
         try:
             _data = await self.request(Req("GET", "/oauth2/applications/@me"))
         except NotAuthorized as e:
             raise LoginFailure("Invalid Token") from e
-        
+
         self._application = _data
         self.application_id = _data["id"]
         return _data
-    
+
     async def get_global_application_commands(self) -> List[dict]:
         """
         Fetch all of the global commands for your application.
         """
         _req = Req("GET", f"/applications/{self.application_id}/commands")
         return await self.request(_req)
-    
+
     async def create_global_application_command(self, cmd: dict):
         """
         Create a new global command. New global commands will be available in
-        all guilds after 1 hour. 
+        all guilds after 1 hour.
         """
         _req = Req("POST", f"/applications/{self.application_id}/commands", json=cmd)
         return await self.request(_req)
@@ -116,16 +115,20 @@ class HTTPClient:
         Edit a global command. Updates will be available in all guilds after 1
         hour.
         """
-        _req = Req("PATCH", f"/applications/{self.application_id}/commands/{cmd_id}", json=params)
+        _req = Req(
+            "PATCH",
+            f"/applications/{self.application_id}/commands/{cmd_id}",
+            json=params,
+        )
         return await self.request(_req)
-    
+
     async def delete_global_application_command(self, cmd_id: int):
         """
         Deletes a global command.
         """
         _req = Req("DELETE", f"/applications/{self.application_id}/commands/{cmd_id}")
         return await self.request(_req)
-    
+
     async def bulk_overwrite_global_application_commands(self, cmds: List[dict]):
         """
         Takes a list of application commands, overwriting the existing global
@@ -135,51 +138,73 @@ class HTTPClient:
         """
         _req = Req("PUT", f"/applications/{self.application_id}/commands", json=cmds)
         return await self.request(_req)
-    
+
     async def get_guild_application_commands(self, guild_id: int):
         """
         Fetch all of the guild commands for your application for a specific
         guild.
         """
-        _req = Req("GET", f"/applications/{self.application_id}/guilds/{guild_id}/commands")
+        _req = Req(
+            "GET", f"/applications/{self.application_id}/guilds/{guild_id}/commands"
+        )
         return await self.request(_req)
-    
+
     async def create_guild_application_command(self, guild_id: int, cmd: dict):
         """
         Create a new guild command. New guild commands will be available in the
         guild immediately.
         """
-        _req = Req("POST", f"/applications/{self.application_id}/guilds/{guild_id}/commands")
+        _req = Req(
+            "POST", f"/applications/{self.application_id}/guilds/{guild_id}/commands"
+        )
         return await self.request(_req)
-    
+
     async def get_guild_application_command(self, guild_id: int, cmd_id: int):
         """
         Fetch a guild command for your application.
         """
-        _req = Req("GET", f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}")
+        _req = Req(
+            "GET",
+            f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}",
+        )
         return await self.request(_req)
-    
-    async def edit_guild_application_command(self, guild_id: int, cmd_id: int, params: dict):
+
+    async def edit_guild_application_command(
+        self, guild_id: int, cmd_id: int, params: dict
+    ):
         """
         Edit a guild command. Updates for guild commands will be available
         immediately.
         """
-        _req = Req("PATCH", f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}", json=params)
+        _req = Req(
+            "PATCH",
+            f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}",
+            json=params,
+        )
         return await self.request(_req)
-    
+
     async def delete_guild_application_command(self, guild_id: int, cmd_id: int):
         """
         Delete a guild command.
         """
-        _req = Req("DELETE", f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}")
+        _req = Req(
+            "DELETE",
+            f"/applications/{self.application_id}/guilds/{guild_id}/commands/{cmd_id}",
+        )
         return await self.request(_req)
-    
-    async def bulk_overwrite_guild_application_commands(self, guild_id: int, cmds: List[dict]):
+
+    async def bulk_overwrite_guild_application_commands(
+        self, guild_id: int, cmds: List[dict]
+    ):
         """
         Takes a list of application commands, overwriting the existing command
-        list for this application for the targeted guild. 
+        list for this application for the targeted guild.
         """
-        _req = Req("PUT", f"/applications/{self.application_id}/guilds/{guild_id}/commands", json=cmds)
+        _req = Req(
+            "PUT",
+            f"/applications/{self.application_id}/guilds/{guild_id}/commands",
+            json=cmds,
+        )
         return await self.request(_req)
 
     def get_public_key(self):
