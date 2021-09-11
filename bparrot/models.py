@@ -10,73 +10,6 @@ class DictLoader:
         return cls(**data)
 
 
-class InteractionMessage:
-
-    """
-    Represents a Discord message object
-    """
-
-    #! Only a shell of a message object, needs more logic
-
-    def __init__(self, _client, inter, data: dict):
-
-        self._client = _client
-        self._interaction = inter
-
-        self.id: int = data["id"]
-        self.channel_id: int = data["channel_id"]
-        self.author = data["author"]
-        self.content: str = data["content"]
-        self.timestamp: str = data["timestamp"]
-        self.edited_timestamp: str = data["edited_timestamp"]
-        self.tts = data["tts"]
-        self.mention_everyone = data["mention_everyone"]
-        self.mentions: list = data["mentions"]
-        self.mention_roles: list = data["mention_roles"]
-        self.attachments: list = data["attachments"]
-        self.embeds: list = data["embeds"]
-        self.pinned: bool = data["pinned"]
-        self.type: str = data["type"]
-
-        self.guild_id = data.get("guild_id")
-        self.member = data.get("member")
-        self.mention_channels = data.get("mention_channels")
-        self.reactions: list = data.get("reactions")
-        self.nonce = data.get("nonce")
-        self.webhook_id = data.get("webhook_id")
-        self.activity = data.get("activity")
-        self.application = data.get("application")
-        self.application_id = data.get("application_id")
-        self.message_reference = data.get("message_reference")
-        self.thread = data.get("thread")
-        self.components: list = data.get("components")
-        self.sticker_items = data.get("sticker_items")
-        self.stickers = data.get("stickers")
-
-        self.interaction = data.get("interaction")
-
-    async def edit(self, content: str = None):
-        data = {}
-
-        if content:
-            data["content"] = content
-
-        req = Req(
-            "PATCH",
-            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
-            json=data,
-        )
-        resp = await self._client.http_client.request(req)
-        return InteractionMessage(self._client, self._interaction, resp)
-
-    async def delete(self):
-        req = Req(
-            "DELETE",
-            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
-        )
-        await self._client.http_client.request(req)
-
-
 class Embed:
     """
     A Discord Embed object
@@ -344,3 +277,73 @@ class Member(DictLoader):
         self.bot = self.user.bot
 
         self.mention: str = f"<@{self.user.id}>"
+
+
+@dataclass
+class Message(DictLoader):
+
+    id: int
+    channel_id: int
+    author: User
+    content: str
+    timestamp: str
+    edited_timestamp: str = None
+    tts: bool = False
+    mention_everyone: bool = False
+    mentions: List[User] = None
+    mention_roles: List[int] = None
+    attachments: List[str] = None
+    embeds: List[Embed] = None
+    reactions: list = None
+    nonce: int = None
+    pinned: bool = False
+    webhook_id: int = None
+    type: int = 0
+    activity: dict = None
+    application: dict = None
+    application_id: int = None
+    message_reference: dict = None
+    flags: int = None
+    referenced_message: dict = None
+    interaction: dict = None
+    thread: dict = None
+    components: list = None
+    sticker_items: list = None
+    stickers: list = None
+
+
+class InteractionMessage(Message):
+
+    """
+    Represents a Discord message object
+    """
+
+    #! Only a shell of a message object, needs more logic
+
+    def __init__(self, _client, inter, data: dict):
+
+        super().__init__(**data)
+
+        self._client = _client
+        self._interaction = inter
+
+    async def edit(self, content: str = None):
+        data = {}
+
+        if content:
+            data["content"] = content
+
+        req = Req(
+            "PATCH",
+            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
+            json=data,
+        )
+        resp = await self._client.http_client.request(req)
+        return InteractionMessage(self._client, self._interaction, resp)
+
+    async def delete(self):
+        req = Req(
+            "DELETE",
+            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
+        )
+        await self._client.http_client.request(req)
