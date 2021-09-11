@@ -10,9 +10,6 @@ from bparrot.interaction import Interaction
 from bparrot.core import *
 
 
-_log = logging.getLogger("blurple-parrot")
-
-
 class Client:
     def __init__(
         self,
