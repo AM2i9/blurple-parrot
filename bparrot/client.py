@@ -1,4 +1,5 @@
 from typing import List
+import logging
 import asyncio
 from asyncio.events import AbstractEventLoop
 
@@ -7,6 +8,9 @@ from aiohttp import web
 from bparrot.http import HTTPClient
 from bparrot.interaction import Interaction
 from bparrot.core import *
+
+
+_log = logging.getLogger("blurple-parrot")
 
 
 class Client:
