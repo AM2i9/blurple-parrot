@@ -1,5 +1,6 @@
 import asyncio
 from bparrot.application_commands import (
+    MessageCommand,
     UserCommand,
     get_application_command,
     SlashCommand,
@@ -27,6 +28,8 @@ class InteractionListener:
             kwargs = inter.get_args()
         elif isinstance(inter.data, UserCommand):
             args = [inter.data.member]
+        elif isinstance(inter.data, MessageCommand):
+            args = [inter.data.resolved_message]
         elif (
             isinstance(inter.data, ComponentInteraction)
             and inter.data.component_type == ComponentType.SELECT_MENU

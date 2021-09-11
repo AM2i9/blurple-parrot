@@ -1,4 +1,4 @@
-from bparrot.models import Member, User
+from bparrot.models import Member, Message, User
 import re
 
 from typing import List
@@ -194,6 +194,11 @@ class MessageCommand(ApplicationCommand):
     def __init__(self, name: str, **kwargs):
         super().__init__(ApplicationCommandType.MESSAGE, **kwargs)
         self.name = name
+    
+        resolved = kwargs.get("resolved")
+        if resolved:
+            raw_message = list(resolved.get("messages").values())[0]
+            self.resolved_message = Message.from_dict(raw_message)
 
     def to_dict(self):
         return {"type": self.type, "name": self.name}
