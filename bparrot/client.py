@@ -142,12 +142,17 @@ class Client:
     async def close(self):
         await self.http_client.close()
 
-    def get_app(self) -> web.Application:
-        """
-        Get the web application for running using another web server.
-        """
+    def _get_app(self) -> web.Application:
         self.app.router.add_post(self.interactions_path, self._handle_request)
         return self.app
+
+    async def _pre_run(self):
+        try:
+            await self.http_client.login()
+            if not self._public_key:
+                self._public_key = self.http_client.get_public_key()
+        except Exception as e:
+            raise e
 
     def run(self, **kwargs):
         """
@@ -158,14 +163,20 @@ class Client:
         """
 
         try:
+            self.loop.run_until_complete(self._pre_run())
 
-            self.loop.run_until_complete(self.http_client.login())
-            if not self._public_key:
-                self._public_key = self.http_client.get_public_key()
-
-            app = self.get_app()
+            app = self._get_app()
             web.run_app(app, **kwargs)
         except Exception as e:
             raise e
         finally:
             asyncio.run(self.close())
+    
+    def run_factory(self):
+        """
+        Return a web.Application for running using another web server.
+        """
+
+        self.loop.run_until_complete(self._pre_run())
+        app = self._get_app()
+        return app
