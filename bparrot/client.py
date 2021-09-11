@@ -157,9 +157,13 @@ class Client:
         https://docs.aiohttp.org/en/stable/deployment.html
         """
 
-        app = self.get_app()
-
         try:
+
+            self.loop.run_until_complete(self.http_client.login())
+            if not self._public_key:
+                self._public_key = self.http_client.get_public_key()
+
+            app = self.get_app()
             web.run_app(app, **kwargs)
         except Exception as e:
             raise e
