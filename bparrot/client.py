@@ -15,11 +15,13 @@ class Client:
         public_key: str = "",
         bot_token: str = "",
         interactions_path: str = "/",
+        guild_ids: List[int] = [],
         loop: AbstractEventLoop = None,
     ):
         self.interaction_listeners = []
 
         self.interactions_path = interactions_path
+        self.guild_ids = guild_ids
 
         if not loop:
             loop = asyncio.get_event_loop()
@@ -115,6 +117,33 @@ class Client:
 
         return _deco
 
+    async def _register_commands(self):
+
+        _global = []
+        _guilds = {}
+
+        for listener in self.interaction_listeners:
+            if not listener.inter.guild_id:
+                _global.append(listener.inter.to_dict())
+            else:
+                guild_id = str(listener.inter.guild_id)
+                if guild_id not in _guilds:
+                    _guilds[guild_id] = []
+                _guilds[guild_id].append(listener.inter.to_dict())
+
+        if self.guild_ids:
+            for guild in self.guild_ids:
+                await self.http_client.bulk_overwrite_guild_application_commands(
+                    int(guild), _global
+                )
+        else:
+            await self.http_client.bulk_overwrite_global_application_commands(_global)
+
+        for guild_id, commands in _guilds.items():
+            await self.http_client.bulk_overwrite_guild_application_commands(
+                int(guild_id), commands
+            )
+
     async def on_interaction(self, inter):
         for listener in self.interaction_listeners:
             if type(listener.inter) is type(inter.data):
@@ -151,6 +180,7 @@ class Client:
             await self.http_client.login()
             if not self._public_key:
                 self._public_key = self.http_client.get_public_key()
+            await self._register_commands()
         except Exception as e:
             raise e
 

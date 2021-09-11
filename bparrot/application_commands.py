@@ -194,7 +194,7 @@ class MessageCommand(ApplicationCommand):
     def __init__(self, name: str, **kwargs):
         super().__init__(ApplicationCommandType.MESSAGE, **kwargs)
         self.name = name
-    
+
         resolved = kwargs.get("resolved")
         if resolved:
             raw_message = list(resolved.get("messages").values())[0]
