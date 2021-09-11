@@ -12,17 +12,12 @@ from bparrot.core import *
 class Client:
     def __init__(
         self,
-        application_id: str,
-        public_key: str,
+        public_key: str = "",
         bot_token: str = "",
         interactions_path: str = "/",
         loop: AbstractEventLoop = None,
     ):
         self.interaction_listeners = []
-
-        self.application_id = application_id
-        self.public_key = public_key
-        self.bot_token = bot_token
 
         self.interactions_path = interactions_path
 
@@ -30,8 +25,17 @@ class Client:
             loop = asyncio.get_event_loop()
         self.loop = loop
 
-        self.app = web.Application(loop=loop)
+        if not bot_token and not public_key:
+            raise Exception("A bot token or public key is required")
+
         self.http_client = HTTPClient(loop=loop, token=bot_token)
+
+        if not public_key:
+            public_key = self.http_client.get_public_key()
+        
+        self._public_key = public_key
+
+        self.app = web.Application(loop=loop)
 
     def add_listener(self, listener):
         self.interaction_listeners.append(listener)
@@ -123,7 +127,7 @@ class Client:
         body = await request.text()
         signature = request.headers.get("X-Signature-Ed25519")
         timestamp = request.headers.get("X-Signature-Timestamp")
-        if not verify_key(self.public_key, body, signature, timestamp):
+        if not verify_key(self._public_key, body, signature, timestamp):
             return web.Response(status=401, text="Invalid Request Signature")
 
         _json = await request.json()

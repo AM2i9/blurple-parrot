@@ -13,7 +13,7 @@ from bparrot.application_commands import (
 )
 
 
-_log = logging.getLogger("blurple-parrot")
+_log = logging.getLogger(__name__)
 
 
 def verify_key(pk: str, body: bytes, signature: str, timestamp: str) -> bool:
