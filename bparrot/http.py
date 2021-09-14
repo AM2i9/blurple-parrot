@@ -40,7 +40,7 @@ class Req:
 
 class HTTPClient:
     def __init__(
-        self, token: Optional[str] = None, loop: Optional[AbstractEventLoop] = None
+        self, token: Optional[str] = None, token_type: str = "Bot", loop: Optional[AbstractEventLoop] = None
     ):
         self.loop = loop or asyncio.get_event_loop()
         self._session = ClientSession(loop=self.loop)
@@ -50,6 +50,7 @@ class HTTPClient:
             bparrot.__version__, sys.version_info, aiohttp.__version__
         )
 
+        self.token_type = token_type.title()
         self.token = token
         if not self.token:
             _log.warn("Token required for non-interaction response API calls.")
@@ -58,7 +59,7 @@ class HTTPClient:
 
         headers = req.params.get("headers", {})
         if self.token:
-            headers["Authorization"] = f"Bot {self.token}"
+            headers["Authorization"] = f"{self.token_type} {self.token}"
         req.params["headers"] = headers
 
         async with self._session.request(req.method, req.url, **req.params) as resp:

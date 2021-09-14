@@ -10,7 +10,7 @@ Unlike other Python bot libraries such as [discord.py](https://github.com/Rapptz
 ```py
 from bparrot import Client
 
-client = Client(bot_token="TOKEN")
+client = Client(token="TOKEN")
 
 @client.slash_command(name="mycommand", description="My Slash Command")
 async def my_slash_command(inter):

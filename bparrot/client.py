@@ -14,7 +14,8 @@ class Client:
     def __init__(
         self,
         public_key: str = "",
-        bot_token: str = "",
+        token: str = "",
+        token_type: str = "Bot",
         interactions_path: str = "/",
         guild_ids: List[int] = [],
         loop: AbstractEventLoop = None,
@@ -28,10 +29,10 @@ class Client:
             loop = asyncio.get_event_loop()
         self.loop = loop
 
-        if not bot_token and not public_key:
+        if not token and not public_key:
             raise Exception("A bot token or public key is required")
 
-        self.http_client = HTTPClient(loop=loop, token=bot_token)
+        self.http_client = HTTPClient(loop=loop, token=token, token_type=token_type)
 
         self._public_key = public_key
 
