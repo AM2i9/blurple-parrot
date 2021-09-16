@@ -31,11 +31,12 @@ class EndpointNotFound(Exception):
 
 
 class Req:
-    def __init__(self, method: str, path: str, **params):
+    def __init__(self, method: str, path: str, use_token: bool = True, **params):
         self.method = method
         self.path = path
         self.params = params
         self.url = API_ENDPOINT + path
+        self.use_token = use_token
 
 
 class HTTPClient:
@@ -61,7 +62,7 @@ class HTTPClient:
     async def request(self, req: Req):
 
         headers = req.params.get("headers", {})
-        if self.token:
+        if req.use_token:
             headers["Authorization"] = f"{self.token_type} {self.token}"
         req.params["headers"] = headers
 
