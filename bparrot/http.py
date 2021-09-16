@@ -40,7 +40,10 @@ class Req:
 
 class HTTPClient:
     def __init__(
-        self, token: Optional[str] = None, token_type: str = "Bot", loop: Optional[AbstractEventLoop] = None
+        self,
+        token: Optional[str] = None,
+        token_type: str = "Bot",
+        loop: Optional[AbstractEventLoop] = None,
     ):
         self.loop = loop or asyncio.get_event_loop()
         self._session = ClientSession(loop=self.loop)
@@ -81,12 +84,24 @@ class HTTPClient:
     async def login(self):
 
         try:
-            _data = await self.request(Req("GET", "/oauth2/applications/@me"))
+
+            if self.token_type.upper() == "BOT":
+                _req = Req("GET", "/oauth2/applications/@me")
+            elif self.token_type.upper() == "BEARER":
+                _req = Req("GET", "/oauth2/@me")
+            else:
+                raise LoginFailure(f"Invalid token type '{self.token_type}'")
+
+            _data = await self.request(_req)
         except NotAuthorized as e:
             raise LoginFailure("Invalid Token") from e
 
-        self._application = _data
-        self.application_id = _data["id"]
+        if _data.get("application"):
+            self._application = _data["application"]
+        else:
+            self._application = _data
+
+        self.application_id = self._application["id"]
         return _data
 
     async def get_global_application_commands(self) -> List[dict]:
