@@ -5,10 +5,10 @@ from bparrot.application_commands import (
     get_application_command,
     SlashCommand,
 )
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 from bparrot.http import Req
-from bparrot.components import ComponentInteraction, ComponentType
+from bparrot.components import ActionRow, ComponentInteraction, ComponentType
 from bparrot.models import InteractionMessage, Embed
 
 
@@ -81,7 +81,7 @@ class Interaction:
         embeds: List[Embed] = None,
         allowed_mentions: list = None,
         ephemeral: bool = False,
-        components: list = None,
+        components: list = [],
     ):
         """
         Send a response to an interaction.
@@ -121,7 +121,18 @@ class Interaction:
             data["flags"] = 64
 
         if components:
-            data["components"] = [c.to_dict() for c in components]
+
+            data["components"] = []
+
+            for component in components:
+                if isinstance(component, Iterable):
+                    row = ActionRow(component)
+                elif isinstance(component, ActionRow):
+                    row = component
+                else:
+                    raise Exception("Components must be ActionRows or iterables of components")
+                
+                data["components"].append(row.to_dict())
 
         resp = {"type": type_, "data": data}
 
