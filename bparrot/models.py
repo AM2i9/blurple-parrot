@@ -347,3 +347,67 @@ class InteractionMessage(Message):
             f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
         )
         await self._client.http_client.request(req)
+
+
+class AllowedMentionTypes:
+    none = []
+    all = ["everyone", "users", "roles"]
+    everyone = ["everyone"]
+    users = ["users"]
+    roles = ["roles"]
+
+
+class AllowedMentions:
+    def __init__(
+        self,
+        *,
+        types: List[AllowedMentionTypes] = [],
+        roles: List[int] = [],
+        users: List[int] = [],
+        replied_user: bool = False,
+    ):
+        self.types = list(set(types))
+
+        self.roles = list(set(roles))
+        if len(self.roles) > 100:
+            raise Exception("Maximum of 100 roles ids allowed")
+
+        self.users = list(set(users))
+        if len(self.users) > 100:
+            raise Exception("Maximum of 100 user ids allowed")
+
+        self.replied_user = replied_user
+
+    @classmethod
+    def all(cls, **kwargs):
+        return cls(types=AllowedMentionTypes.all, **kwargs)
+
+    @classmethod
+    def everyone(cls, **kwargs):
+        return cls(types=AllowedMentionTypes.everyone, **kwargs)
+
+    @classmethod
+    def users(cls, **kwargs):
+        return cls(types=AllowedMentionTypes.users, **kwargs)
+
+    @classmethod
+    def roles(cls, **kwargs):
+        return cls(types=AllowedMentionTypes.roles, **kwargs)
+
+    def to_dict(self):
+
+        data = {}
+
+        if self.types:
+            data["parse"] = self.types
+
+        if self.roles:
+            data["roles"] = self.roles
+
+        if self.users:
+            data["users"] = self.users
+
+        if self.replied_user:
+            data["replied_user"] = self.replied_user
+
+        return data

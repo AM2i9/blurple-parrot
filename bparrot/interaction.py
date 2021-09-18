@@ -9,7 +9,7 @@ from typing import Iterable, List, Tuple
 
 from bparrot.http import Req
 from bparrot.components import ActionRow, ComponentInteraction, ComponentType
-from bparrot.models import InteractionMessage, Embed
+from bparrot.models import InteractionMessage, Embed, AllowedMentions
 
 
 class InteractionListener:
@@ -79,7 +79,7 @@ class Interaction:
         tts: bool = False,
         embed: Embed = None,
         embeds: List[Embed] = None,
-        allowed_mentions: list = None,
+        allowed_mentions: AllowedMentions = None,
         ephemeral: bool = False,
         components: list = [],
     ):
@@ -130,11 +130,17 @@ class Interaction:
                 elif isinstance(component, ActionRow):
                     row = component
                 else:
-                    raise Exception("Components must be ActionRows or iterables of components")
-                
+                    raise Exception(
+                        "Components must be ActionRows or iterables of components"
+                    )
+
                 data["components"].append(row.to_dict())
 
+        if allowed_mentions:
+            data["allowed_mentions"] = allowed_mentions.to_dict()
+
         resp = {"type": type_, "data": data}
+        print(resp)
 
         self._responded = True
         return resp
