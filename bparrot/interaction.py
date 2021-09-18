@@ -38,7 +38,7 @@ class InteractionListener:
 
         resp = await self.handler(inter, *args, **kwargs)
         if self._after_response:
-            asyncio.create_task(self._after_response(inter, **args))
+            asyncio.create_task(self._after_response(inter, *args, **kwargs))
         return resp
 
     def after_response(self, func):
