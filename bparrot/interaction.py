@@ -157,26 +157,22 @@ class Interaction:
         allowed_mentions: list = None,
         ephemeral: bool = False,
         components: list = None,
-        username: str = None,
-        avatar_url: str = None,
     ):
         """
         Create a followup message to an interaction. Can only be used after
         the interaction has already been responded.
         """
         if not self._responded:
-            raise Exception("Interaction has no initial response.")
+            raise Exception("Cannot send followup message before intial response.")
 
-        data = {}
-
-        if content is not None:
-            data["content"] = content
-
-        if tts:
-            data["tts"] = bool(tts)
-
-        if ephemeral:
-            data["flags"] = 64
+        data = self.create_response(
+            content=content,
+            tts=tts,
+            embeds=embeds,
+            allowed_mentions=allowed_mentions,
+            ephemeral=ephemeral,
+            components=components,
+        )["data"]
 
         req = Req("POST", f"/webhooks/{self.application_id}/{self.token}", json=data)
         resp = await self._client.http_client.request(req)
@@ -213,16 +209,14 @@ class Interaction:
         if not self._responded:
             raise Exception("Interaction has no initial response.")
 
-        data = {}
-
-        if content is not None:
-            data["content"] = content
-
-        if tts:
-            data["tts"] = bool(tts)
-
-        if ephemeral:
-            data["flags"] = 64
+        data = self.create_response(
+            content=content,
+            tts=tts,
+            embeds=embeds,
+            allowed_mentions=allowed_mentions,
+            ephemeral=ephemeral,
+            components=components,
+        )["data"]
 
         req = Req(
             "PATCH",
