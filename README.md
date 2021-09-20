@@ -6,11 +6,27 @@ Unlike other Python bot libraries such as [discord.py](https://github.com/Rapptz
 
 ## Example Usage
 
+### Clients
+There are two types of clients, one for each type of login.
+```py
+from bparrot import ApplicationClient, BotClient
+
+# Client Credentials Grant
+client = ApplicationClient(
+    client_id=1234567890,
+    client_secret="verysecretclientsecret",
+)
+
+# Bot Token
+client = BotClient("BOT_TOKEN")
+```
+
 ### Basic slash command and usage
 ```py
-from bparrot import Client
-
-client = Client(token="TOKEN")
+client = ApplicationClient(
+    client_id=1234567890,
+    client_secret="verysecretclientsecret",
+)
 
 @client.slash_command(name="mycommand", description="My Slash Command")
 async def my_slash_command(inter):

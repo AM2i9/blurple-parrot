@@ -7,6 +7,7 @@ from aiohttp import web
 
 from bparrot.http import HTTPClient
 from bparrot.interaction import Interaction
+from bparrot.auth import get_application_token
 from bparrot.core import *
 
 
@@ -212,3 +213,48 @@ class Client:
         self.loop.run_until_complete(self._pre_run())
         app = self._get_app()
         return app
+
+
+class BotClient(Client):
+    def __init__(
+        self,
+        token: str,
+        *,
+        public_key: str = "",
+        interactions_path: str = "/",
+        guild_ids: List[int] = [],
+        loop: AbstractEventLoop = None,
+    ):
+        super().__init__(
+            public_key=public_key,
+            token=token,
+            token_type="Bot",
+            interactions_path=interactions_path,
+            guild_ids=guild_ids,
+            loop=loop,
+        )
+
+
+class ApplicationClient(Client):
+    def __init__(
+        self,
+        client_id: int,
+        client_secret: str,
+        scopes: list = [],
+        *,
+        public_key: str = "",
+        interactions_path: str = "/",
+        guild_ids: List[int] = [],
+        loop: AbstractEventLoop = None,
+    ):
+
+        token = get_application_token(client_id, client_secret, scopes)
+
+        super().__init__(
+            public_key=public_key,
+            token=token,
+            token_type="Bearer",
+            interactions_path=interactions_path,
+            guild_ids=guild_ids,
+            loop=loop,
+        )

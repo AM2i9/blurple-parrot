@@ -1,5 +1,4 @@
-from bparrot.client import Client
-from bparrot.auth import get_application_token
+from bparrot.client import ApplicationClient, BotClient
 from bparrot.core import *
 from bparrot.models import *
 from bparrot.interaction import *
