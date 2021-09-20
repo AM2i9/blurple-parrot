@@ -140,7 +140,6 @@ class Interaction:
             data["allowed_mentions"] = allowed_mentions.to_dict()
 
         resp = {"type": type_, "data": data}
-        print(resp)
 
         self._responded = True
         return resp
