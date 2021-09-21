@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from bparrot.http import Req
-
 
 class DictLoader:
     @classmethod
@@ -333,20 +331,15 @@ class InteractionMessage(Message):
         if content:
             data["content"] = content
 
-        req = Req(
-            "PATCH",
-            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
-            json=data,
+        resp = await self._client.http_client.edit_interaction_message(
+            (self._interaction.token, data, self.id)
         )
-        resp = await self._client.http_client.request(req)
         return InteractionMessage(self._client, self._interaction, resp)
 
     async def delete(self):
-        req = Req(
-            "DELETE",
-            f"/webhooks/{self.application_id}/{self._interaction.token}/messages/{self.id}",
+        await self._client.http_client.delete_interaction_message(
+            self._interaction.token, self.id
         )
-        await self._client.http_client.request(req)
 
 
 class AllowedMentionTypes:

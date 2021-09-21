@@ -7,7 +7,6 @@ from bparrot.application_commands import (
 )
 from typing import Iterable, List, Tuple
 
-from bparrot.http import Req
 from bparrot.components import ActionRow, ComponentInteraction, ComponentType
 from bparrot.models import InteractionMessage, Embed, AllowedMentions
 
@@ -179,8 +178,9 @@ class Interaction:
             components=components,
         )["data"]
 
-        req = Req("POST", f"/webhooks/{self.application_id}/{self.token}", json=data)
-        resp = await self._client.http_client.request(req)
+        resp = await self._client.http_client.send_interaction_followup(
+            self.token, data
+        )
         resp_message = InteractionMessage(self._client, self, resp)
         return resp_message
 
@@ -192,10 +192,7 @@ class Interaction:
         if not self._responded:
             raise Exception("Interaction has no initial response.")
 
-        req = Req(
-            "DELETE", f"/webhooks{self.application_id}/{self.token}/messages/@original"
-        )
-        await self._client.http_client.request(req)
+        await self._client.http_client.delete_interaction_message(self.token)
 
     async def edit_initial_response(
         self,
@@ -223,11 +220,6 @@ class Interaction:
             components=components,
         )["data"]
 
-        req = Req(
-            "PATCH",
-            f"/webhooks/{self.application_id}/{self.token}/messages/@original",
-            json=data,
-        )
-        resp = await self._client.http_client.request(req)
+        resp = await self._client.http_client.edit_interaction_message(self.token, data)
         resp_message = InteractionMessage(self._client, self, resp)
         return resp_message

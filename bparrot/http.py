@@ -62,7 +62,9 @@ class HTTPClient:
             headers["Authorization"] = f"{self.token_type} {self.token}"
         params["headers"] = headers
 
-        async with self._session.request(method, f"{API_ENDPOINT}{route}", **params) as resp:
+        async with self._session.request(
+            method, f"{API_ENDPOINT}{route}", **params
+        ) as resp:
 
             if resp.status == 204:
                 return None
@@ -216,6 +218,34 @@ class HTTPClient:
             "PUT",
             f"/applications/{self.application_id}/guilds/{guild_id}/commands",
             json=cmds,
+        )
+
+    async def send_interaction_followup(self, token, data: dict):
+        """
+        Send a followup message to an interaction.
+        """
+        return await self.request(
+            "POST", f"/webhooks/{self.application_id}/{self.token}", json=data
+        )
+
+    async def delete_interaction_message(self, token, message="@original"):
+        """
+        Delete an interaction response. Defaults to the original response
+        message.
+        """
+        return await self.request(
+            "DELETE", f"/webhooks{self.application_id}/{token}/messages/{message}"
+        )
+
+    async def edit_interaction_message(self, token, data: dict, message="@original"):
+        """
+        Edit an interaction response. Defaults to the original message
+        response.
+        """
+        return await self.request(
+            "PATCH",
+            f"/webhooks/{self.application_id}/{token}/messages/{message}",
+            json=data,
         )
 
     def get_public_key(self):
