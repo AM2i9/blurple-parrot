@@ -17,6 +17,9 @@ class InteractionListener:
         self.handler = handler
 
         self._after_response = None
+    
+    def __getattr__(self, name):
+        return getattr(self.inter, name)
 
     async def handle(self, inter) -> dict:
 
